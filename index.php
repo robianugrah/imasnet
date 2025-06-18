@@ -1,145 +1,174 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kedai Sahabat Ngopi</title>
+<?php 
+	session_start();
+	include '../conn/koneksi.php';
+	if(!isset($_SESSION['username'])){
+		header('location:../index.php');
+	}
+	elseif($_SESSION['data']['level'] != "admin"){
+		header('location:../index.php');
+	}
+ ?>
+  <!DOCTYPE html>
+  <html>
+    <head>
+    	<title>Aplikasi Pengaduan Layanan Pelanggan</title>
+      <!--Import Google Icon Font-->
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <!--Import materialize.css-->
+      <link type="text/css" rel="stylesheet" href="../css/materialize.min.css"  media="screen,projection"/>
 
-    <!-- fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,300;0,400;0,700;1,700&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Feather icons -->
-    <script src="https://unpkg.com/feather-icons"></script>
+      <!-- Compiled and minified CSS -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 
-    <!-- my style -->
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
-    <!-- navbar start -->
-    <nav class="navbar">
-      <a href="#" class="navbar-logo"><span>Imasnet</span></a>
+      <!-- Compiled and minified JavaScript -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-      <div class="navbar-nav">
-        <a href="#home">Home</a>
-        <a href="#about">Tentang Kami</a>
-        <a href="#menu">Menu</a>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+      <!--Let browser know website is optimized for mobile-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+      
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+      
+      <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+      
+      
+      <script type="text/javascript">
+        $(document).ready( function () {
+          $('#example').DataTable();
+          $('select').formSelect();
+        } );
+      
+      </script>
+
+    </head>
+
+    <body style="background:url(../img/bg.jpg); background-size: cover;">
+
+    <div class="row">
+      <div class="col s12 m3">
+          <ul id="slide-out" class="sidenav sidenav-fixed">
+              <li>
+                  <div class="user-view">
+                      <div class="background">
+                          <img src="../img/bg.jpg">
+                      </div>
+                      <a href="#user"><img class="circle" src="https://cdn5.vectorstock.com/i/1000x1000/01/69/businesswoman-character-avatar-icon-vector-12800169.jpg"></a>
+                      <a href="#name"><span class="blue-text name"><?php echo ucwords($_SESSION['data']['nama_petugas']); ?></span></a>
+                  </div>
+              </li>
+              <li><a href="index.php?p=dashboard"><i class="material-icons">dashboard</i>Dashboard</a></li>
+              <li><a href="index.php?p=registrasi"><i class="material-icons">featured_play_list</i>Registrasi</a></li>
+              <li><a href="index.php?p=pengaduan"><i class="material-icons">report</i>Pengaduan</a></li>
+              <li><a href="index.php?p=respon"><i class="material-icons">question_answer</i>Respon</a></li>
+              <li><a href="index.php?p=user"><i class="material-icons">account_box</i>User</a></li>
+              <li><a href="index.php?p=laporan"><i class="material-icons">book</i>Laporan</a></li>
+              <li>
+                  <div class="divider"></div>
+              </li>
+              <li><a class="waves-effect" href="../index.php?p=logout"><i class="material-icons">logout</i>Logout</a></li>
+          </ul>
+
+          <a href="#" data-target="slide-out" class="btn sidenav-trigger"><i class="material-icons">menu</i></a>
       </div>
 
-      <div class="navbar-extra">
+      <div class="col s12 m9">
         
-        <a href="#" id="call-button"><i data-feather="call-cart"></i></a>
-        <a href="#" id="hamburger-menu"><i data-feather="menu"></i></a>
+	<?php 
+		if(@$_GET['p']==""){
+			include_once 'dashboard.php';
+		}
+		elseif(@$_GET['p']=="dashboard"){
+			include_once 'dashboard.php';
+		}
+		elseif(@$_GET['p']=="registrasi"){
+			include_once 'registrasi.php';
+		}
+		elseif(@$_GET['p']=="regis_hapus"){
+			$query = mysqli_query($koneksi,"DELETE FROM masyarakat WHERE nik='".$_GET['nik']."'");
+			if($query){
+				header('location:index.php?p=registrasi');
+			}
+		}
+		elseif(@$_GET['p']=="pengaduan"){
+			include_once 'pengaduan.php';
+		}
+		elseif(@$_GET['p']=="pengaduan_hapus"){
+			$query=mysqli_query($koneksi,"SELECT * FROM pengaduan WHERE id_pengaduan='".$_GET['id_pengaduan']."'");
+			$data=mysqli_fetch_assoc($query);
+			unlink('../img/'.$data['foto']);
+			if($data['status']=="proses"){
+				$delete=mysqli_query($koneksi,"DELETE FROM pengaduan WHERE id_pengaduan='".$_GET['id_pengaduan']."'");
+				header('location:index.php?p=pengaduan');
+			}
+			elseif($data['status']=="selesai"){
+				$delete=mysqli_query($koneksi,"DELETE FROM pengaduan WHERE id_pengaduan='".$_GET['id_pengaduan']."'");
+				if($delete){
+					$delete2=mysqli_query($koneksi,"DELETE FROM tanggapan WHERE id_pengaduan='".$_GET['id_pengaduan']."'");
+					header('location:index.php?p=pengaduan');
+				}	
+			}
+
+		}
+		elseif(@$_GET['p']=="more"){
+			include_once 'more.php';
+		}
+		elseif(@$_GET['p']=="respon"){
+			include_once 'respon.php';
+		}
+		elseif(@$_GET['p']=="tanggapan_hapus"){
+			
+			$query = mysqli_query($koneksi,"DELETE FROM tanggapan WHERE id_tanggapan='".$_GET['id_tanggapan']."'");
+			if($query){
+				header('location:index.php?p=respon');
+			}
+		}
+		elseif(@$_GET['p']=="user"){
+			include_once 'user.php';
+		}
+		elseif(@$_GET['p']=="user_input"){
+			include_once 'user_input.php';
+		}
+		elseif(@$_GET['p']=="user_edit"){
+			include_once 'user_edit.php';
+		}
+		elseif(@$_GET['p']=="user_hapus"){
+			$query = mysqli_query($koneksi,"DELETE FROM petugas WHERE id_petugas='".$_GET['id_petugas']."'");
+			if($query){
+				header('location:index.php?p=user');
+			}
+		}
+		elseif(@$_GET['p']=="laporan"){
+			include_once 'laporan.php';
+		}
+	 ?>
+
       </div>
 
-      <!-- search form start -->
-      <div class="search-form">
-        <input type="search" id="search-box" placeholder="search here..." />
-        <label for="search-box"><i data-feather="search"></i></label>
-      </div>
-      <!-- search form end -->
-    </nav>
-    <!-- navbar end -->
 
-    <!-- hero section start -->
-    <section class="hero" id="home">
-      <main class="content">
-        <h1> Apakah Ada Bisa Kami Bantu? <span></span></h1>
-        <p>
-          Silahkan login terlebih dulu untuk memulai pengaduan 
-        </p>
-        <a href="login.php" class="cta"> Login Sekarang </a>
-      </main>
-    </section>
-    <!-- hero section end -->
-
-    <!-- about section start -->
-    <section id="about" class="about">
-      <h2><span>Tentang</span> Kami</h2>
-      <div class="row">
-        <div class="about-img">
-          <img src="img/gt.jpg" alt="Tentang Kami" />
-        </div>
-        <div class="content">
-          <h3>Kenapa memilih kami?</h3>
-          <p>
-            IMASNET adalah sebuah perusahaan penyedia layanan internet berbasis jaringan wireless (nirkabel) dan fiber optic yang beroperasi di wilayah Kecamatan Darmaraja, Kabupaten Sumedang, Jawa Barat. Perusahaan ini fokus pada penyediaan konektivitas internet untuk pelanggan rumah tangga, UMKM, hingga institusi publik. Dalam upayanya meningkatkan kualitas layanan, IMASNET terus berinovasi, salah satunya dengan menyediakan saluran pengaduan digital berbasis web untuk menjawab keluhan pelanggan secara cepat dan terstruktur. Imasnet merupakan mitra penyedia layanan internet lokal dari PT. Global Sarana Elektronika yang fokus memberikan akses internet cepat dan stabil, khususnya untuk desa dan wilayah pelosok desa, seiring dengan maraknya layanan internet dengan harga terjangkau di kabupaten sumedang imasnet hadir menjadi solusi internet. 
-          </p>
-          <p>
-            
-          </p>
-        </div>
-      </div>
-    </section>
-    <!-- about section end -->
+    </div>
 
 
-    <!-- menu section start -->
-    <section id="menu" class="menu">
-      <h2><span>Menu</span> Kami</h2>
-      <p>
-        Menyediakan berbagai perbaikan sebagai berikut.
-      </p>
-      <div class="row">
-        <div class="menu-card">
-          <img src="img/menu.jpg" alt="Espresso" class="menu-card-img" />
-          <h3 class="menu-card-title">- Gangguan jaringan -</h3>
-        
-        </div>
-        <div class="menu-card">
-          <img src="img/menu.jpg" alt="Espresso" class="menu-card-img" />
-          <h3 class="menu-card-title">- Lemot jaringan -</h3>
-          
-        </div>
-        <div class="menu-card">
-          <img src="img/menu.jpg" alt="Espresso" class="menu-card-img" />
-          <h3 class="menu-card-title">- Kabel rusak-</h3>
-         
-        </div>
-        <div class="menu-card">
-          <img src="img/menu.jpg" alt="Espresso" class="menu-card-img" />
-          <h3 class="menu-card-title">- Sinyal hilang -</h3>
-          
-        </div>
-        <div class="menu-card">
-          <img src="img/menu.jpg" alt="Espresso" class="menu-card-img" />
-          <h3 class="menu-card-title">- Router mati -</h3>
-          
-        </div>
-      </div>
-    </section>
-    <!-- menu section end -->
 
 
-    <!-- footer start -->
-    <footer>
-      <div class="socials">
-        <a href="#"><i data-feather="instagram"></i></a>
-        <a href="#"><i data-feather="twitter"></i></a>
-        <a href="#"><i data-feather="facebook"></i></a>
-      </div>
+      <!--JavaScript at end of body for optimized loading-->
+      <script type="text/javascript" src="../js/materialize.min.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-      <div class="links">
-        <a href="#home">Home</a>
-        <a href="#about">Tentang Kita</a>
-        <a href="#menu">Menu</a>
-      </div>
+      <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+          var elems = document.querySelectorAll('.sidenav');
+          var instances = M.Sidenav.init(elems);
+        });
 
-      <div class="credit">
-        <p>Created by <a href="">massbii</a>. | &copy; 2025</p>
-      </div>
-    </footer>
-    <!-- footer end -->
+        document.addEventListener('DOMContentLoaded', function() {
+          var elems = document.querySelectorAll('.modal');
+          var instances = M.Modal.init(elems);
+        });
 
-    <!-- Feather Iconts -->
-    <script>
-      feather.replace();
-    </script>
+      </script>
 
-    <!-- my javascript -->
-    <script src="js/script.js"></script>
-  </body>
-</html>
+    </body>
+  </html>
